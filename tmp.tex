@@ -1,0 +1,26 @@
+
+\documentclass[]{article}
+\usepackage{graphicx}
+\usepackage{framed}
+\usepackage{epstopdf}
+\usepackage{apalike}
+%opening
+\title{A1 Simple Vision Touch integration}
+\author{}
+
+\begin{document}
+	\begin{eqnarray}
+	y = \frac{B}{x} + E \\
+	E = y - \frac{B}{x} \\
+	min\sum_{i}(E_i^2) = min \sum_{i}(y_i - \frac{B}{x_i})^2 \\
+	\frac{dE}{dB} = \sum_{i}2(y_i-\frac{B}{x_i}) \times \frac{-1}{x_i} \\
+	\frac{dE}{dB} = -2\sum_{i}(\frac{y_i}{x_i}) + 2B\sum_{i}(\frac{1}{x_i^2}) \\ 
+	\texttt{set dE/dB = 0 to find min} \\
+	0 = -2\sum_{i}(\frac{y_i}{x_i}) + 2B\sum_{i}(\frac{1}{x_i^2}) \\
+	B = \frac{\sum_{i}(\frac{y_i}{x_i})}{\sum_{i}(\frac{1}{x_i^2})}
+	\end{eqnarray}
+
+
+\end{document}
+
+

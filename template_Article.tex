@@ -1,0 +1,90 @@
+
+\documentclass[]{article}
+\usepackage{graphicx}
+\usepackage{framed}
+\usepackage{epstopdf}
+%opening
+\title{A1 Simple Vision Touch integration}
+\author{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{General setup}
+Same 10 objects as ICRA15's paper. Same tactile data. Additionally, 20 photos per object. Some are cropped. No clutter. No significant change in scale.
+Dataset is split into 3 subsets: validation, training and testing. For touch these are, respectively, of size 60, 30 and 30. For vision, they are, respectively, of size 15, 15 and 5.
+Some samples in Fig. \ref{fig_sample_10_objects_mixed}. Images are resized to 300x300 pixels and set to grayscale prior to processing.
+
+\begin{figure}
+\centering
+\framebox{\parbox{\linewidth}{
+\includegraphics[width=1.0\linewidth]{fig_sample_10_objects_mixed}
+\caption[Vision and tactile images of objects]{Two photos and two tactile sensations corresponding to some of the 10 objects used for recognition.}
+\label{fig_sample_10_objects_mixed}
+}}
+\end{figure}
+
+
+
+\section{Parameter optimisation}
+
+\subsection{Touch classifier: SoG vs KDE}
+
+10000 simulations were run for touch only object recognition, over the 10 objects (as in ICRA15), each simulation averaged over 10 trials (different data splits). Our method of Sum of Gaussians (SoG) was compared to standard Kernel Density Estimation (KDE), due to their similarities. (KDE does not require estimating the covariance matrix of the gaussians, but since PCA is used to obtain the data points, when using SoG this matrix is -up to numerical precision- diagonal.) 
+Average accuracies on the validation dataset, shown in Fig. \ref{A1i_acc_vs_testingSamples_kde_vs_sog_errorbars}, clearly show a superiority in SOG over KDE.
+Recall that the more testing touches are performed, the higher the accuracy of the tactile recognition system. In this example the accuracy is not as high as in (ICRA 15), which is due to the training set size being 15 instead of 60. This is done thinking of the visual training which will be done with a similar set size.
+
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[width=1.0\linewidth]{A1i_acc_vs_testingSamples_kde_vs_sog_errorbars.eps}
+			\caption[Accuracy of SOG and KDE]{Accuracy of recognition for 10 objects using touch only vs the number of touches used at test time. Showing mean average over approx. 100 trials for each and error bars displaying 1 standard deviation. In each trial 15 tactile images are used for training.}
+			\label{A1i_acc_vs_testingSamples_kde_vs_sog_errorbars}
+		}}
+\end{figure}
+
+\subsection{Touch: Number of principal components}
+During pre-training, PCA is performed on tactile zernike moments. The optimal number of PCA components to keep is sought by testing accuracy on the validation dataset.
+Fig. \ref{A1i_acc_vs_ncomponents_and_explained_pca} shows accuracies and total variance explained by retaining different number of components. There seems to be a peak at 20, so we choose this as our optimal parameter.
+
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[width=1.0\linewidth]{A1i_acc_vs_ncomponents_and_explained_pca.eps}
+			\caption[Choosing PCA components to keep]{Accuracy of recognition for 10 objects using touch only vs the number of PCA components kept. Showing mean average over approx. 100 trials for each. In each trial 15 tactile images are used for training. (Left) and pre-training data variance explained by principal components (Right)}
+			\label{A1i_acc_vs_ncomponents_and_explained_pca}
+		}}
+	\end{figure}
+
+\subsection{Vision SIFT vs SURF: principal components and visual words}
+Number of visual words and number of principal components were optimised jointly using Support Vector Machines and Naive Bayes as classifiers comparing SIFT and SURF as feature descriptors. Fig. \ref{A1r_acc_vis_SURF_SIFT_PCA_noPCA_vs_nwords} shows the result. It seems evident that SVM is superior to Naive Bayes in this context. Accuracy does not seem to improve much above 100 visual words so we choose this as our optimal parameter. PCA seems counterproductive, and as such it is, henceforth, dropped.
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[width=1.0\linewidth]{A1r_acc_vis_SURF_SIFT_PCA_noPCA_vs_nwords.eps}
+			\caption[Vision parameters optimisation (SIFT)]{Accuracy of recognition for 10 objects using vision only vs the number of visual words and number of PCA components. Showing mean average over approximately 100 trials for each parameter choice. In each trial 60 visual images are used for training.}
+			\label{A1r_acc_vis_SURF_SIFT_PCA_noPCA_vs_nwords}
+		}}
+	\end{figure}
+
+\section{Direct tactile-visual integration}
+Fixing parameters to the optimal ones found previously, the above experiment is repeated with various combinations of number of training samples for vision and touch. Results are grouped together by total number of training samples, to compare whether, say, 10 training samples for vision are preferable to 6 vision and 4 touch, or 3 vision 7 touch, etc. 
+Probabilities from SVM are calculated using 
+
+The result is shown in Fig. \ref{A1h_accuracy_vs_total_training_samples_extended}. It seems that, under this system, there is no point in storing multi-modal information. One might as well dedicate all memory to remembering one modality. This is, however, early stages of learning, where only a few samples are used for training (fewer than 16 in this case) and where accuracy is still relatively low. What happens when accuracy is higher? Does multi-modality become relevant at that stage? For the next experiment, the number of training images for both vision and touch are increased and the comparison is made once again.
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[width=1.0\linewidth]{A1h_accuracy_vs_total_training_samples_extended.eps}
+			\caption[Accuracy vs number of training samples]{Accuracy of recognition for 10 objects vs the number of training samples used. Showing mean averagen over approximately 200 simulations for each graph point. Comparison of various ways of combining the posterior vectors for vision and touch. The lines for vision and touch end early, as the maximum number of training samples used was 60, whilst for multimodal methods it is 120 (60 from vision and 60 from touch).}
+			\label{A1h_accuracy_vs_total_training_samples_extended}
+		}}
+	\end{figure}
+
+
+\end{document}

@@ -1,0 +1,126 @@
+
+\documentclass[]{article}
+\usepackage{graphicx}
+\usepackage{framed}
+\usepackage{epstopdf}
+\usepackage{apalike}
+%opening
+\title{A1 Simple Vision Touch integration}
+\author{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{General setup}
+Same 10 objects as ICRA15's paper. Same tactile data. Additionally, 35 photos per object. Some are cropped. No clutter. No significant change in scale.
+Dataset is split into 3 subsets: validation, training and testing. For touch these are, respectively, of size 60, 30 and 30. For vision, they are, respectively, of size 15, 15 and 5.
+Some samples in Fig. \ref{A1u_objAllframes_samples_full_cropped}. Images are resized to 300x300 pixels and set to grayscale prior to processing.
+
+\begin{figure}
+\centering
+\framebox{\parbox{\linewidth}{
+\includegraphics[width=1.0\linewidth]{A1u_objAllframes_samples_full_cropped.png}
+\caption[Object visual and tactile image samples]{Sample of visual cropped images (top 2 rows) and full images (middle 2 rows), and random samples of tactile images (bottom row)}
+\label{A1u_objAllframes_samples_full_cropped}
+}}
+\end{figure}
+
+
+
+\section{Parameter optimisation}
+
+\subsection{Touch classifier: SoG vs KDE}
+
+10000 simulations were run for touch only object recognition, over the 10 objects (as in ICRA15), each simulation averaged over 10 trials (different data splits). Our method of Sum of Gaussians (SoG) was compared to standard Kernel Density Estimation (KDE), due to their similarities. (KDE does not require estimating the covariance matrix of the gaussians, but since PCA is used to obtain the data points, when using SoG this matrix is -up to numerical precision- diagonal.) 
+Average accuracies on the validation dataset, shown in Fig. \ref{A1i_acc_vs_testingSamples_kde_vs_sog_errorbars}, clearly show a superiority in SOG over KDE.
+Recall that the more testing touches are performed, the higher the accuracy of the tactile recognition system. In this example the accuracy is not as high as in (ICRA 15), which is due to the training set size being 15 instead of 60. This is done thinking of the visual training which will be done with a similar set size.
+
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[width=1.0\linewidth]{A1i_acc_vs_testingSamples_kde_vs_sog_errorbars.eps}
+			\caption[Accuracy of SOG and KDE]{Accuracy of recognition for 10 objects using touch only vs the number of touches used at test time. Showing mean average over approx. 100 trials for each and error bars displaying 1 standard deviation. In each trial 15 tactile images are used for training.}
+			\label{A1i_acc_vs_testingSamples_kde_vs_sog_errorbars}
+		}}
+\end{figure}
+
+\subsection{Touch: Number of principal components}
+During pre-training, PCA is performed on tactile zernike moments. The optimal number of PCA components to keep is sought by testing accuracy on the validation dataset.
+Fig. \ref{A1i_acc_vs_ncomponents_and_explained_pca} shows accuracies and total variance explained by retaining different number of components. There seems to be a peak at 20, so we choose this as our optimal parameter.
+
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[width=1.0\linewidth]{A1i_acc_vs_ncomponents_and_explained_pca.eps}
+			\caption[Choosing PCA components to keep]{Accuracy of recognition for 10 objects using touch only vs the number of PCA components kept. Showing mean average over approx. 100 trials for each. In each trial 15 tactile images are used for training. (Left) and pre-training data variance explained by principal components (Right)}
+			\label{A1i_acc_vs_ncomponents_and_explained_pca}
+		}}
+	\end{figure}
+
+\subsection{Vision SIFT vs SURF: principal components and visual words}
+The visual classifier follows a standard Bag-of-visual-words approach:
+\begin{enumerate} 
+	\item Features (e.g. SIFT or SURF) in a pretraining set of images are extracted
+	\item (optionally) PCA is applied to reduce dimensionality
+	\item Features are quantized using k-means to develop a vocabulary. 
+	\item During training/testing, images' features are classified as one of these k-mean centres by proximity and thus become "visual words". 
+	\item The number of words in each image is counted and a histogram is formed. This histogram represents the image
+	\item Histograms are used as a vector to train either an SVM or a NaiveBayes classifier (typically).
+\end{enumerate}
+The number of visual words and the number of principal components were optimised jointly using Support Vector Machines and Naive Bayes as classifiers comparing SIFT and SURF as feature descriptors. Fig. \ref{A1r_acc_vis_SURF_SIFT_PCA_noPCA_vs_nwords} shows the result. PCA seems counterproductive, and as such it is, henceforth, dropped. It seems evident that SVM is superior to Naive Bayes in this context. Accuracy does not seem to improve much above 100 visual words so we choose this as our optimal parameter. A similar result is obtained on a smaller image set (24 images per class) corresponding to the same objects, even if testing is only performed on images with partial occlusion (see Fig. \ref{A1r_acc_vis_ojectPhotos24_vs_nwords_Occ_vs_nonOcc}). As a consequence, henceforth SVM-SURF is used as vision model.
+ 
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[width=1.0\linewidth]{A1r_acc_vis_SURF_SIFT_PCA_noPCA_vs_nwords.eps}
+			\caption[Vision parameters optimisation]{Accuracy of recognition for 10 objects using vision only vs the number of visual words and number of PCA components. 60 images are used for training and 28 for testing. Showing mean average over approximately 100 trials for each parameter choice. }
+			\label{A1r_acc_vis_SURF_SIFT_PCA_noPCA_vs_nwords}
+		}}
+	\end{figure}
+ 
+ \begin{figure}
+ 	\centering
+ 	\framebox{\parbox{\linewidth}{
+ 			\includegraphics[width=1.0\linewidth]{A1r_acc_vis_ojectPhotos24_vs_nwords_Occ_vs_nonOcc.eps}
+ 			\caption[Vision parameters optimisation (small set)]{Accuracy of recognition for 10 objects using vision only vs the number of visual words. 18 images are used for training and 6 for testing on mixed images (Left) and partially occluded images (Right). Showing mean average over approximately 100 trials for each parameter choice. }
+ 			\label{A1r_acc_vis_ojectPhotos24_vs_nwords_Occ_vs_nonOcc}
+ 		}}
+ 	\end{figure}
+
+\section{Direct tactile-visual integration: posterior fusion}
+A simple way of combining the modalities is to obtain a posterior distribution over object identities according to each, and then combine just these posteriors (e.g. via addition or element-wise multiplication).
+For tactile posterior calculations, Sum of Gaussians over Zernike-PCA vectors is used. For visual posteriors, SURF bag-of-features are used with an SVM One-vs-All classifier (as discussed eariler). The SVM scores are converted to posteriors using \cite{Platt1999}. As before, training is conducted independently on images of 10 objects and tactile readings of the same objects, performed autonomously by a robot. This time, we also test on "blotched" images: images which have been covered by a small random number of black circles occluding approximately $20\%$ of the pixels.
+\subsection{Does touch improve vision?}
+Consider two classifiers, one for each modality, trained on 60 images (tactile or visual). Does the visual classifier benefit from additional information granted by the tactile classifier? Fig. \ref{A1p_improving_vision_by_n_touches} shows accuracy varies as more and more touches are made at test time for full images and for cropped images. It can be seen that, even after the first touch, any of the combinations proposed gives an improvement over vision alone and over touch alone. The improvement in the first few touches is significantly larger when only "blotched" images are used at test time.
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[width=1.0\linewidth]{A1p_improving_vision_by_n_touches.eps}
+			\caption[Accuracy of Vision plus N touches]{Accuracy of recognition for 10 objects vs the number touches used at test time. Showing mean average over approximately 180 simulations for each graph point. Comparison of various ways of combining the posterior vectors for vision and touch. P(C|V,T) stands for probability of an object C, given the input from vision and touch.}
+			\label{A1p_improving_vision_by_n_touches}
+		}}
+	\end{figure}
+
+\subsection{Learning efficiency: accuracy and number of training samples}
+Assuming we wish to restrict the number of training samples to a fixed value, and it needs to be distributed between visual and tactile training samples, what is the best way of doing so for maximising accuracy of recognition?
+Fixing parameters to the optimal ones found previously, the above experiment is repeated with various combinations of number of training samples for vision and touch. Results, shown in Fig. \ref{A1v_acc_vs_totaltraining_full_and_spotted}, are grouped together by total number of training samples, to compare whether, say, 40 training samples for vision are preferable to 20 vision and 20 touch, or 30 vision 10 touch, etc. Vision dominates for the case of unaltered images and any modality combination is inferior. It seems that, under this system, there is no point in storing multi-modal information. It is more efficient to use all memory to store one modality (vision). In the case of using "blotched" images at test time, however, the fusion system does seem to be more efficient than either modality alone. In summary, if one modality dominates, it is more memory efficient to only store such modality. If neither dominates, then their combination is more efficient.
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[width=1.0\linewidth]{A1v_acc_vs_totaltraining_full_and_spotted.eps}
+			\caption[Accuracy vs number of training samples]{Accuracy of recognition for 10 objects vs the number of training samples used. Showing mean average over approximately 180 simulations for each graph point. Comparison of various ways of combining the posterior vectors for vision and touch. The lines for vision and touch end early, as the maximum number of training samples used was 60, whilst for multimodal methods it is 120 (60 from vision and 60 from touch).}
+			\label{A1v_acc_vs_totaltraining_full_and_spotted}
+		}}
+	\end{figure}
+	
+\bibliographystyle{apalike}
+\bibliography{A1}
+
+\end{document}
+
+

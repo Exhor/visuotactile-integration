@@ -1,0 +1,211 @@
+\documentclass[letterpaper, 10 pt, conference]{ieeeconf}  % Comment this line out if you need a4paper
+\pdfminorversion=4
+%\documentclass[a4paper, 10pt, conference]{ieeeconf}      % Use this line for a4 paper
+
+\IEEEoverridecommandlockouts                              % This command is only needed if 
+% you want to use the \thanks command
+
+\overrideIEEEmargins    
+%\documentclass[]{article}
+%\documentclass[letterpaper, 10 pt, twocolumn]{article}
+\usepackage{graphicx}
+\usepackage{framed}
+\usepackage{epstopdf}
+\usepackage{apalike}
+%opening
+\title{Tactile recognition of objects combining vision and touch}
+\author{Tadeo Corradi, Peter Hall and Pejman Iravani% <-this % stops a space
+	\thanks{*This work was funded by the Engineering and Physical Sciences Council (EPSRC), UK}% <-this % stops a space
+	\thanks{Department of Mechanical Engineering, University of Bath, Claverton Down, Bath, BA27AY, UK
+		{\tt\small t.m.corradi@bath.ac.uk}}%
+}
+\newcommand*{\refname}{Bibliography}
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Whilst machine vision is a widely studied field, and machine touch has received recent attention, the fusion of both modalities remains a relatively unexplored area.
+Humans benefit from a multi-modal representation of the objects we encounter, with some suggestions that there exist shared multi-modal representations of objects in the human brain.
+In this paper, ways of combining machine vision and touch for the purpose of object recognition are explored, in particular when there are few training samples.
+A comparison is drawn in terms of overall accuracy and in terms of learning efficiency (the accuracy compared to the number of training samples).
+The conclusion reached is that multi-modal recognition is superior to either modality alone and, in the case of visual impairment, multi-modal recognition has higher learning efficiency.
+\end{abstract}
+
+\section{Introduction}
+It seems evident that the presence of multiple sensors \cite{Kim2004,Gorges2010}, capable of capturing complementary information about the environment, is a desirable feature of modern robots. Indeed, there are indications that humans use similar mechanisms to process sensory information from vision and touch and that memories are multi-sensorial in nature \cite{Lacey2007,Vasconcelos2011,Lacey2014}.
+Machine vision is a thoroughly research field. In particular object recognition has been so well understood that it has surpassed human accuracy \cite{He2015}.
+Machine touch has also received a great deal of attention of late. Whilst most commonly focused on Texture recogntion \cite{Decherchi2011,Jamali2011,Liu2012,Sinapov2011}, substantial efforts have been made to design object recognition systems using touch \cite{Navarro2012,Soh2012,Madry2014}. 
+The question of how these modalities are to be used in conjunction remains, however, largely unanswered. Early attempts involved building geometric models of objects \cite{Allen1988}, whilst more recently, the field has received a lot more attention, consitently showing that sensor fusion outperforms either modality alone \cite{Kim2004,Ilonen2013,Guler2014,Yang2015}. Only \cite{Kim2004,Yang2015} specifically consider object recognition with a direct fusion of touch and vision, and this is done with grasping approaches. 
+In this paper, a complete sensor fusion model is proposed for vision and touch, demonstrating its potential in object recognition with a small number of training samples. Unlike the previous studies referred to in this section, which use grasping, a single-touch approach is used, using a biologically inspired tactile `finger' (see Fig. \ref{fig_rig}). In particular, for the cases where both modalities perform poorly independently (e.g. vision impairment), benefits are highlighted. Previous similar work \cite{Yang2015} is further extended, by considering the concept of ``learning efficiency", demonstrating that, under certain conditions, multi-modal learning outperforms vision and touch in this measure as well.
+
+\begin{figure}
+\centering
+\framebox{\parbox{3in}{
+		\includegraphics[scale=0.77]{rig2.png}
+		\caption{Tactile data is collected autonomously by a novel sensor mounted on a KUKA KR-650\cite{Corradi2015}.}
+		\label{fig_rig}
+	}}	
+\end{figure}
+
+\section{Related Work}
+\subsection{Tactile Object recognition}
+Most tactile recognition systems are based on recognition from grasping. For example using Self-Organising Maps and neural nets for household object recognition \cite{Navarro2012}, using gaussian kernels to attain online learning of new classes \cite{Soh2012}, and hierarchical feature learning (including temporal information) for object recognition \cite{Madry2014}, all of which obtain near perfect accuracy.
+Recognition from grasping, however, requires the ability to grasp the object, whose identity is yet unknown, a non-trivial, and sometimes impossible, problem. It is also possible to recognise the object by means of individual contacts with a single tactile sensor. Some approaches involve volumetric reconstruction \cite{Gorges2010a,Aggarwal2015} such as point-clouds or voxel space representation. Accuracy reaches 80\% in some cases for 45 objects and only 10 touches, but 3D models of the said objects are required in advance. Furthermore, there are technical challenges with scaling point-could and voxel representations. This paper focuses on this particular scope: single touch (non-grasping) object recognition. Recently, it was shown that single touch object recognition is possible even with low quality sensors \cite{Corradi2015} and that it may even be possible to classify unseen objects. Here, the model is extended to account for visual information, comparing three different approaches.
+
+\subsection{Visuo-tactile integration}
+Earliest attempts at integrating vision and touch were conducted by \cite{Allen1988} using geometric models of objects and touch to complement unseen parts and again to estimate the parameteres of a kinematic model for hand-object interactions \cite{Allen1999}.
+Later, neural nets were used to fuse visual data and pressure data, showing that this sensor fusion was faster at learning and more accurate than either modality alone \cite{Kim2004}.
+Recent work included fusion of RGB-D data and tactile data using an invariant extended Kalman filter to discover and refine 3D models of unseen objects \cite{Ilonen2013}.
+It has been shown that fusion of vision and touch can be used to recognise the content of squeezed bottles \cite{Guler2014}, where again the fusion of modalities outperforms either modality alone.
+Recently, Sun et al. \cite{Sun2016} showed that classifying objects using vision and touch independently helps in identifications of suitable grasping plans. 
+Most closely related to this paper is the work of Yang et al. \cite{Yang2015}. They have shown that visuo-tactile integration shows great promise, demonstrating an improvement in accuracy using a simple weighted k-nearest-neighbour classifier to adjudicate a class label given vectors representing the tactile and visual input, obtaining a higher accuracy when both are combined rather than either used alone.
+
+\section{Tactile and Visual models}
+\subsection{Tactile model}
+The tactile sensor used here was first introduced by \cite{Corradi2014}. It comprises a webcam inside an ABS enclosure, filming the deformation of a silicone rubber membrane, as it makes contact with an object (see Fig. \ref{fig_bathtip}). 
+\begin{figure}
+\centering
+\framebox{\parbox{3in}{
+		\includegraphics[scale=0.47]{BathTip.eps}
+		\caption{The new tactile sensor design (left) first reported in \cite{Corradi2014}. The main body is 3D printed in ABS. The tip is a 1mm thick silicone rubber hemisphere. At the base (not visible) there is a USB eSecure© web-cam with 8 LEDs illuminating the inside of the silicone hemisphere. As the tip makes contact with an object, it deforms resulting in a specific shading pattern (right). Schematics and part details openly available at: https://github.com/Exhor/bathtip.}
+	\label{fig_bathtip}
+	}}
+\end{figure}
+An extensive comparison of encodings and classifiers to best process the output of this sensor for object recognition are covered in recent work \cite{Corradi2014,Corradi2015}. The algorithm devised in that work involves computing the Zernike moments \cite{Zernike1934} of a given normalised image (as read by the camera), and using PCA for dimensionality reduction. Zernike moments are obtained by computing the modulus of the inner product of tactile image's intensity values with the zernike polynomials, evaluated on a unit disk (Fig. \ref{zerpolys} shows the first few). For more details, see \cite{Corradi2015}.
+\begin{figure}
+	\centering
+	\framebox{\parbox{3in}{
+			\includegraphics[scale=0.62]{zerpolys.png}
+			\caption{First 12 Zernike polynomials evaluated over a unit disk, depicted as modulus (red) and phase (blue).}
+			\label{zerpolys}
+		}}
+	\end{figure}
+	
+The resulting vectors are then used in a Naive Bayes classifier based on a Sum of Gaussians likelihood model. The tactile representation of each object is therefore $n \times d$-dimensional, corresponding to the first $d$ principal components of the Zernike-PCA descriptor of $n$ touch images captured during training time.
+Tactile object posterior computation is then based on a sum of Gaussians, centered at these training samples. Let the training set be $X_c = \{X_{c,i}, i=1,...,n\}$, were $X_i$ is the Zernike-PCA moment vector the $i^{th}$ tactile image of object $c$, which was observed $n$ times during training. 
+
+Let $W$ be the covariance matrix of $X_c$\footnote{In practice, this is the diagonal matrix of variances, since $X_c$ is the scores matrix resulting from PCA.}. Let $t = \{t_j, j = 1,...,m\}$ be the sequence of Zernike-PCA moments (where the PCA reduction is performed using the dimensionality reduction matrix obtained from the training data), where $t_j$ represents the Zernike-PCA moments of the $j^{th}$ tactile image of the object being sensed, and whose class is being inferred. Then the likelihood of $t_j$ for a given object class $C$ is defined as:
+$$
+P(t_j | C) = \frac{1}{n_C}\sum_{i=1}^{n_C}\mathcal{N}(t_i | X_{C,i}, W) \eqno{(1)}
+$$
+Where,
+$$
+\mathcal{N}(t_i | X_{C,i}, W) =  \frac{e^{-\frac{1}{2}(t_j-X_{C,i})^TW^{-1}(t_j-X_{C,i})}}{\sqrt{\|W\|(2\pi)^d}}
+$$
+Here, $d$ is the dimensionality of the feature vector. Assuming subsequent observations of the object are independent, and applying Bayes' Rule, the probability of each object class, given the set of observations $t$, is given by:
+\begin{equation}
+P(C | t) =  \alpha\prod_{j=1}^{m} P(t_j | C) P(C)
+\label{eqn_pct}
+\end{equation}
+Where $\alpha$ is a normalizing constant, and $P(C)$ can be estimated from the number of times each object is observed during training, which in our case forms a uniform prior distribution. Therefore, for touch-only recognition, object label inference is:
+$$
+C_{touch} = arg \max_{C} P(C|v)
+$$
+\subsection{Visual model}
+The visual model is a simple bag-of-words model, using SURF \cite{Bay2006} feature. K-means %\cite{MacQueen1967} 
+is used on the SURF descriptors of a pre-training dataset of unrelated images, for the purpose of dictionary creation. Each object images SURF feature is assigned a label (word), the closest k-means centre to it. Each image is thereafter represented by the histogram of these labels (words). During training, a one-vs-all r.b.f.-kernel support vector machine (SVM) is used on the normalised histograms corresponding to each object. During testing, a single image is used. The image's histogram is presented to all the SVMs, and a posterior distribution over object labels is computed using Platt scaling \cite{Platt1999}. Specifically, let $s(v)$ be the score given by the SVM corresponding to label $C$ to the visual histogram $v$ of an object's image. Then the probability of label $C$ is estimated as:
+\begin{equation}
+P(C|v) = \frac{1}{1+exp(As(v)+B)} 
+\label{eqn_pcv}
+\end{equation}
+Where $A$ and $B$ are two constants estimated by maxisimising the log likelihood of the training data (for details, see \cite{Platt1999}). The predicted label for vision only is therefore simply:
+$$
+C_{vision} = arg \max_{C} P(C | v)
+$$
+
+\subsection{Visuo-tactile integration models}
+\label{sec_visuotactilemodels}
+While attempting to integrate various modalities, recent work has focused in either deep learning and other neural approaches \cite{NIPS2012_4683,Wu2013a,Schmitz2014}, probabilistic \cite{Liu2012a} or direct vector concatenation \cite{Yang2015}. The first group has advantages in their ability to recognise relationship between input data at various levels of abstraction. However, they do require more data, which is a limitation in tactile robotics. In this paper, three approaches are considered, summarised in Fig. \ref{SensorFusionMethodsDiagram}, and described below.
+
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[scale=0.25]{SensorFusionMethodsDiagram.png}
+			\caption{Three sensor fusion models, multimodal recognition process.}
+			\label{SensorFusionMethodsDiagram}
+		}}
+	\end{figure}
+
+\subsubsection{Posterior product}
+the first model presented here is a combination of the latter two approaches mentioned above, aiming to be probabilistic in nature but simple and direct. Label prediction is done by maximising the product of the posterior distribution for vision and for touch. Let $P(C|t)$ and $P(C|v)$ be the probabilities that the object being sensed has label $C$, given the tactile and the visual sensed data, respectively, as defined in equations (\ref{eqn_pct}) and (\ref{eqn_pcv}). Then the predicted label using both modalities is estimated by:
+\begin{equation}
+C_{product} = arg\max_C\{P(C|t)P(C|v)\}
+\end{equation}
+There is an implicit assumption of independence in the above model. Evidently, this is a simplification, since the posterior over labels obtained from one modality confers some information about the posterior obtained by the other (e.g. if `vision' predicts the label `book', it increases the expectation that `touch' would do so as well, if both models show high independent accuracy). The assumption here is that such correlation is either tenuous or ultimately inconsequential, considering classification is done with maximum-a-posteriori.
+\subsubsection{Vector concatenation}
+following the work of \cite{Yang2015}, the second model presented directly concatenates the feature vectors for vision and touch and then label prediction is done by just finding the nearest neighbour in the training dataset. Vector length will depend on the number of touches at test time. Due to the high-dimensionality of the data, the $L_{0.1}$ distance metric \cite{Aggarwal2001} is used.
+\subsubsection{Weighted average of posteriors}
+a heuristic alternative is to consider the weighted average of posteriors, where the weight is set to the number of training samples for the modality. Thus, let $tr_T$ and $tr_V$ denote the number of training samples for a given simulation, then the heuristic's predicted label $C_{avg}$ given the input data, is:
+\begin{equation}
+C_{avg} = arg\max_C \{tr_T P(c|t) + tr_V P(c|v)\}
+\end{equation}
+The rationale for such a function is that the more experience (training samples) there is in a particular modality, the more it should be `trusted'.
+
+\section{Experiments and Results}
+Training is conducted independently on images of 10 objects (see Fig. \ref{fig_objects}) collected manually and tactile readings of the same objects, performed autonomously by a robot (for details, see \cite{Corradi2015}). 
+
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[scale=0.74]{the_objects}
+			\caption{The 10 household objects used.}
+	\label{fig_objects}
+	}}
+\end{figure}
+
+For some of the tests, images are corrupted to produce ``blotched" images to simulate visual impairment: images are covered by a small random number of black circles occluding approximately $20\%$ of the pixels. Images are resized to 300x300 pixels and set to gray-scale prior to processing. Some samples are depicted in Fig. \ref{A1u_objAllframes_samples_full_blotched}.
+
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[width=1.0\linewidth]{A1u_objAllframes_samples_full_blotched.png}
+			\caption[Object visual and tactile image samples]{Sample of visual cropped images (top row), blotched images (middle row) and full images (bottom row), and random samples of tactile images (bottom row)}
+	\label{A1u_objAllframes_samples_full_blotched}
+	}}
+\end{figure}
+	
+Parameter estimation was performed on a validation subset of the data and the following optimal parameters were obtained:
+\begin{itemize}
+	\item Number of principal components to retain in Zernike+PCA descriptors: 20
+	\item Optimal feature descriptor from amongst SIFT \cite{Lowe1999}, SURF, HOG \cite{Dalal2005}: SURF
+	\item Size of the visual vocabulary for the SURF Bag-of-words model: 100
+\end{itemize}
+For every simulation, the remaining dataset was split into training and testing subsets. The number of training samples varies in each simulation. For visual posterior calculation, a single image is used. For tactile recognition, up to 30 readings are considered in sequence and their individual posteriors are multiplied (with smoothing), as described previously. Two experiments are reported. The first compared the accuracy of recognition of uni-modal and multi-modal approaches. The second compared learning efficiency, i.e. the accuracy for a given number of total training samples.
+
+\subsection{Uni-modal and multi-modal recognition}
+For the first experiment, 60 visual and 60 tactile training samples are used. Each simulation represents a different training/testing data split. 700 simulations are run in total. Recognition is performed by the methods outlined in section \ref{sec_visuotactilemodels}. As there are 10 objects, the baseline (random) recognition accuracy is 0.1.
+Fig. \ref{A1p_improving_vision_by_n_touches_3_fusions} shows how accuracy varies as more and more touches are made at test time for full images and for blotched images. Even after the first touch, any of the combinations considered gives an improvement over vision alone (albeit small) and over touch alone. The improvement in the first few touches is significantly larger when only ``blotched" images are used at test time. Indeed, the improvement seems smallest where the two modalities differ significantly in performance, and one dominates over the other. 
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[width=1.0\linewidth]{A1p_improving_vision_by_n_touches_3_fusions.eps}
+			\caption[Accuracy of Vision plus N touches]{Accuracy of recognition for 10 objects vs the number touches used at test time. Showing mean average over 700 simulations for each graph. Comparison of three approaches to multi-modal recognition.}
+			\label{A1p_improving_vision_by_n_touches_3_fusions}
+		}}
+\end{figure}
+
+\subsection{Learning efficiency: accuracy vs number of training samples}
+For the second experiment, in each simulation the total number of training samples is set to a fixed value and the accuracy for uni-modal and multi-modal is computed. For example, when the number of training samples is set to 40, tactile-only and visual-only recognition is performed using 40 training samples, but multi-modal recognition is performed using 20 visual and 20 tactile, or 35 visual and 5 tactile, or any other combination. This is different to all previous work encountered, where all data is pooled together (such as in the first experiment). The aim is to ascertain how efficient in terms of memory is the learning process with multi-modal representations, in comparison to each individual modality. 
+
+Results, shown in Fig. \ref{A1v_acc_vs_totaltraining_full_and_spotted_3_fusions}, are grouped together by total number of training samples. Following the findings in the first experiment, the reported number of touches at test time are chosen so as to not allow either modality to dominate overmuch. Notice this is larger in the case of full images (vision is stronger in such case, so more touches are needed to achieve a similar degree of accuracy).
+
+Observing the lower part of Fig. \ref{A1v_acc_vs_totaltraining_full_and_spotted_3_fusions}, it seems that there is no point in storing multi-modal information for full images. It is more efficient to use all memory to store one modality, even in the cases where no modality dominates. In the case of using ``blotched" images at test time, however, the fusion system does seem to be more efficient than either modality alone. The artificially introduced visual impairment had the effect of overall lowering the accuracy of vision, and, where this is combined with lower accuracy from touch, greater ``learning efficiency" is obtained by the multi-modal approaches, in particular, product of posteriors, $C_{prod}$.
+\begin{figure}
+	\centering
+	\framebox{\parbox{\linewidth}{
+			\includegraphics[width=1.0\linewidth]{A1v_acc_vs_totaltraining_full_and_spotted_3_fusions.eps}
+			\caption[Accuracy vs number of training samples]{Accuracy of recognition for 10 objects vs the number of training samples used. Showing mean average over 700 simulations for each graph. Comparison of the three approaches to multi-modal recognition.}
+			\label{A1v_acc_vs_totaltraining_full_and_spotted_3_fusions}
+		}}
+	\end{figure}
+	
+\section{Conclusions}
+A system was proposed for the purpose of visuo-tactile object representation and recognition using a simple visual model and a novel tactile model with an inexpensive tactile sensor. While previous work \cite{Corradi2015} shows that object recognition via multiple single-contact tactile readings is feasible, the model is extended here, highlighting the benefits of multimodal approaches. These benefits are consistent with observations in similar work \cite{Yang2015}. This paper extends their conclusions by also observing that learning efficiency is improved in some cases where the accuracy of independent modalities is low, namely when vision is impaired artificially and only a few tactile contacts are allowed. This finding is concordant with the conclusions of \cite{Kim2004}, whose neural nets train faster using vision and touch than either alone, albeit with a significantly different approach. Further work will explore the potential for object class recognition and thus the extension to a larger database.
+	
+\bibliographystyle{apalike}
+\bibliography{A1}
+
+\end{document}
+
+
