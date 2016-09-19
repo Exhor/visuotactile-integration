@@ -126,14 +126,14 @@ C_{vision} = arg \max_{C} P(C | v)
 
 \section{Visuo-tactile integration models}
 \label{sec_visuotactilemodels}
-While attempting to integrate various modalities, recent work has focused in either deep learning and other neural approaches \cite{NIPS2012_4683,Wu2013a,Schmitz2014}, probabilistic \cite{Liu2012a} or direct vector concatenation \cite{Yang2015}. The first group has advantages in their ability to recognise relationship between input data at various levels of abstraction. However, they do require more data, which is a limitation in tactile robotics. In this paper, three approaches are compared, summarised in Fig. \ref{SensorFusionMethodsDiagram}, and described below.
+While attempting to integrate various modalities, recent work has focused in either deep learning and other neural approaches \cite{NIPS2012_4683,Wu2013a,Schmitz2014}, probabilistic \cite{Liu2012a} or direct vector concatenation \cite{Yang2015}. The first group has advantages in their ability to recognise relationship between input data at various levels of abstraction. However, they do require more data, which is a limitation in tactile robotics. In this paper, three approaches are compared, summarised in Fig. \ref{SensorFusionMethodsDiagramConcatSVM}, and described below.
 
 \begin{figure}
 	\centering
 	\framebox{\parbox{\linewidth}{
-			\includegraphics[width=\linewidth]{SensorFusionMethodsDiagramVerticalWithoutPretraining.pdf}
+			\includegraphics[width=\linewidth]{images/SensorFusionMethodsDiagramVerticalWithoutPretrainingConcatSVM.pdf}
 			\caption{Three sensor fusion models for multimodal recognition process.}
-			\label{SensorFusionMethodsDiagram}
+			\label{SensorFusionMethodsDiagramConcatSVM}
 		}}
 	\end{figure}
 
@@ -232,7 +232,7 @@ The artificially introduced visual impairment had the effect of overall lowering
 	\end{figure}
 	
 \section{Conclusions}
-A system was proposed for the purpose of visuo-tactile object recognition, by extending a recent tactile recognition model \cite{Corradi2015} and integrating it with a simple visual model. Three alternatives were considered for such integration, $C_{concat}$, $C_{avg}$ and $C_{prod}$. Visuo-tactile approaches show considerable performance gains over either individual modality for the purpose of object recognition. In particular, the proposed method of posterior product outperforms recent similar work \cite{Yang2015}, although it has to be born in mind that the datasets are different, and tactile robotics is as of yet too diverse for simple direct comparisons. A novel comparison metric was proposed, fixing the total number of training samples a priori, so that, for example, a visuo-tactile approach using 30 visual and 30 touch training samples is compared to visual-only or tactile-only systems using 60 training samples. Under this new metric, the superiority of multimodal approaches (and of poterior-product in particular) was only found where the accuracies of independent modalities were low, namely when vision was impaired artificially and only a few tactile contacts were allowed at test time. Further work will explore the potential of these models for object class recognition and fine-grained recognition, using multiple instances of each class and thus the extension to a larger dataset.
+A system was proposed for the purpose of visuo-tactile object recognition, by extending a recent tactile recognition model \cite{Corradi2015} and integrating it with a simple visual model. Three alternatives were considered for such integration, $C_{concat}$, $C_{avg}$ and $C_{prod}$. Visuo-tactile approaches show considerable performance gains over either individual modality for the purpose of object recognition. In particular, the proposed method of posterior product outperforms both the weighted-average heuristic and the vector concatenation \cite{Yang2015}. A novel comparison metric was proposed, fixing the total number of training samples a priori, so that, for example, a visuo-tactile approach using 30 visual and 30 touch training samples is compared to visual-only or tactile-only systems using 60 training samples. Under this new metric, the superiority of multimodal approaches (and of poterior-product in particular) was only found where the accuracies of independent modalities were low, namely when vision was impaired artificially and only a few tactile contacts were allowed at test time. Further work will explore the potential of these models for object class recognition and fine-grained recognition, using multiple instances of each class and thus the extension to a larger dataset.
 	
 \bibliographystyle{MyIEEEtran}
 \bibliography{IEEEabrv,A1}
